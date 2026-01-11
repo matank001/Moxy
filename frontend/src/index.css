@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+
+/* Puke Security Tool Design System */
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 60 97% 33%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 15% 95%;
+    --secondary-foreground: 215 25% 25%;
+
+    --muted: 210 15% 93%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 60 97% 33%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 60 97% 33%;
+
+    --radius: 0.625rem;
+
+    /* Custom Puke variables */
+    --mono-font: 'JetBrains Mono', monospace;
+    --sans-font: 'Inter', system-ui, sans-serif;
+    --logo-font: 'Space Grotesk', system-ui, sans-serif;
+    
+    --method-get: 142 71% 45%;
+    --method-post: 217 91% 60%;
+    --method-put: 38 92% 50%;
+    --method-delete: 0 72% 51%;
+    --method-patch: 280 65% 55%;
+    --method-options: 215 15% 45%;
+    --method-head: 199 89% 48%;
+
+    --status-2xx: 142 71% 45%;
+    --status-3xx: 217 91% 60%;
+    --status-4xx: 38 92% 50%;
+    --status-5xx: 0 72% 51%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 25%;
+    --sidebar-primary: 60 97% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 96%;
+    --sidebar-accent-foreground: 215 25% 15%;
+    --sidebar-border: 210 20% 90%;
+    --sidebar-ring: 60 97% 33%;
+  }
+
+  .dark {
+    --background: 215 25% 10%;
+    --foreground: 210 20% 95%;
+
+    --card: 215 25% 13%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 215 25% 13%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 60 97% 33%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 210 15% 85%;
+
+    --muted: 215 20% 18%;
+    --muted-foreground: 215 15% 55%;
+
+    --accent: 60 97% 33%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 60 97% 33%;
+
+    --sidebar-background: 215 25% 12%;
+    --sidebar-foreground: 210 15% 85%;
+    --sidebar-primary: 60 97% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 20% 18%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 20% 20%;
+    --sidebar-ring: 60 97% 33%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--sans-font);
+  }
+
+  .font-mono {
+    font-family: var(--mono-font);
+  }
+
+  .font-logo {
+    font-family: var(--logo-font);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .http-viewer {
+    @apply font-mono text-sm leading-relaxed whitespace-pre-wrap;
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15);
+  }
+
+  .method-badge {
+    @apply inline-flex items-center justify-center px-2 py-0.5 text-xs font-semibold rounded-md font-mono;
+  }
+
+  .method-get {
+    @apply bg-[hsl(var(--method-get)/0.15)] text-[hsl(var(--method-get))];
+  }
+
+  .method-post {
+    @apply bg-[hsl(var(--method-post)/0.15)] text-[hsl(var(--method-post))];
+  }
+
+  .method-put {
+    @apply bg-[hsl(var(--method-put)/0.15)] text-[hsl(var(--method-put))];
+  }
+
+  .method-delete {
+    @apply bg-[hsl(var(--method-delete)/0.15)] text-[hsl(var(--method-delete))];
+  }
+
+  .method-patch {
+    @apply bg-[hsl(var(--method-patch)/0.15)] text-[hsl(var(--method-patch))];
+  }
+
+  .method-options {
+    @apply bg-[hsl(var(--method-options)/0.15)] text-[hsl(var(--method-options))];
+  }
+
+  .method-head {
+    @apply bg-[hsl(var(--method-head)/0.15)] text-[hsl(var(--method-head))];
+  }
+
+  .status-2xx {
+    @apply text-[hsl(var(--status-2xx))];
+  }
+
+  .status-3xx {
+    @apply text-[hsl(var(--status-3xx))];
+  }
+
+  .status-4xx {
+    @apply text-[hsl(var(--status-4xx))];
+  }
+
+  .status-5xx {
+    @apply text-[hsl(var(--status-5xx))];
+  }
+}
