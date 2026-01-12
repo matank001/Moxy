@@ -241,7 +241,6 @@ export const HomeTab = () => {
         // Only update if intercept is still enabled (avoid race conditions)
         if (interceptEnabled) {
           const flowIds = data.flow_ids || [];
-          console.log('Loaded intercepted flow IDs:', flowIds);
           setInterceptedFlowIds(flowIds);
         } else {
           // If intercept was disabled, clear the list
@@ -398,10 +397,7 @@ export const HomeTab = () => {
     
     try {
       const backendRequests = await api.getProjectRequests(currentProject.id);
-      
-      // Debug: log flow_ids from backend
-      console.log('Backend requests with flow_ids:', backendRequests.map(r => ({ id: r.id, flow_id: r.flow_id })));
-      
+
       // Transform requests
       const transformedRequests = backendRequests.map(transformRequest);
       setRequests(transformedRequests);

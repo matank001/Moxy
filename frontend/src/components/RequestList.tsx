@@ -43,10 +43,6 @@ export const RequestList = ({
       return false;
     }
     const isIntercepted = interceptedFlowIds.includes(request.flow_id);
-    // Debug logging
-    if (isIntercepted) {
-      console.log('Request intercepted:', request.flow_id, 'in list:', interceptedFlowIds);
-    }
     return isIntercepted;
   };
 
