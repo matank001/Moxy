@@ -60,7 +60,7 @@ export const ProxyTab = () => {
     } catch (error) {
       console.error("Failed to start proxy:", error);
       toast.error("Failed to start proxy", {
-        description: error instanceof Error ? error.message : "Make sure mitmproxy is installed",
+        description: error instanceof Error ? error.message : "",
       });
     } finally {
       setIsLoading(false);

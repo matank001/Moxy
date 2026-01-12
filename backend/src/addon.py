@@ -26,17 +26,7 @@ backend_dir = addon_dir.parent
 db.MAIN_DATABASE_PATH = str(backend_dir / 'moxy.db')
 db.PROJECTS_DB_DIR = str(backend_dir / 'projects_data')
 
-# Configure logging to file
-log_file = Path(__file__).parent / 'proxy.log'
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler(log_file),
-    ]
-)
 logger = logging.getLogger(__name__)
-
 
 class ProxyRecorder:
     def __init__(self):

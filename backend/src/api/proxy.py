@@ -40,7 +40,7 @@ def start_proxy():
             }), 200
         else:
             return jsonify({
-                'error': 'Failed to start proxy. Make sure mitmproxy is installed.',
+                'error': 'Failed to start proxy.',
                 'running': False
             }), 500
     except Exception as e:

@@ -127,13 +127,11 @@ def start_proxy():
         addon_path = Path(__file__).parent / 'addon.py'
         
         # Set up log files
-        log_dir = Path(__file__).parent
-        stdout_log = log_dir / 'mitmproxy_stdout.log'
-        stderr_log = log_dir / 'mitmproxy_stderr.log'
+        log_dir = 'projects_data'
+        stdout_log = Path(log_dir) / 'mitmproxy_stdout.log'
         
         # Open log files
         stdout_file = open(stdout_log, 'w')
-        stderr_file = open(stderr_log, 'w')
         
         # Start mitmdump process with verbose logging
         # Set stream_large_bodies=0 to disable streaming and capture full bodies (0 = never stream)
@@ -145,17 +143,15 @@ def start_proxy():
                 '--set', 'termlog_verbosity=info',  # Debug level logging
             ],
             stdout=stdout_file,
-            stderr=stderr_file,
             cwd=Path(__file__).parent,
             env={**os.environ, 'PYTHONPATH': str(Path(__file__).parent)}
         )
         
         # Store file handles for cleanup
         _proxy_process._stdout_file = stdout_file
-        _proxy_process._stderr_file = stderr_file
         
         print(f"✅ Proxy started on port {_proxy_port} (PID: {_proxy_process.pid})", file=sys.stderr)
-        print(f"📝 Logs: {stdout_log} and {stderr_log}", file=sys.stderr)
+        print(f"📝 Logs: {stdout_log}", file=sys.stderr)
         return True
     except FileNotFoundError:
         print("", file=sys.stderr)
@@ -189,8 +185,6 @@ def stop_proxy():
         # Close log files
         if hasattr(_proxy_process, '_stdout_file'):
             _proxy_process._stdout_file.close()
-        if hasattr(_proxy_process, '_stderr_file'):
-            _proxy_process._stderr_file.close()
         
         print(f"✅ Proxy stopped", file=sys.stderr)
         _proxy_process = None

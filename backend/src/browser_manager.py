@@ -35,7 +35,7 @@ def _run_browser(proxy_port):
                 proxy=proxy,
                 disable_security=True,  # Required to ignore SSL certificate errors from mitmproxy
                 keep_alive=True,
-                # user_data_dir="./browser/",
+                user_data_dir="./projects_data/browser_data",
             )
             
             await browser.start()
