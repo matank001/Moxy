@@ -144,6 +144,67 @@ export function parseRawResponse(rawResponse: string): {
 }
 
 /**
+ * Parse HTTP content (request or response) into headers and body
+ */
+export function parseHttpContent(content: string): {
+  requestLine?: string;
+  statusLine?: string;
+  headers: Array<{ name: string; value: string; raw: string }>;
+  body: string;
+  isResponse: boolean;
+} {
+  if (!content) {
+    return { headers: [], body: '', isResponse: false };
+  }
+
+  const lines = content.split(/\r?\n/);
+  if (lines.length === 0) {
+    return { headers: [], body: '', isResponse: false };
+  }
+
+  // Check if it's a response (starts with HTTP/) or request (starts with METHOD)
+  const firstLine = lines[0];
+  const isResponse = firstLine.startsWith('HTTP/');
+  const statusLine = isResponse ? firstLine : undefined;
+  const requestLine = !isResponse ? firstLine : undefined;
+
+  const headers: Array<{ name: string; value: string; raw: string }> = [];
+  let bodyStart = -1;
+  const headerStart = 1; // Skip status/request line
+
+  // Parse headers
+  for (let i = headerStart; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trim() === '') {
+      bodyStart = i + 1;
+      break;
+    }
+    
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const headerName = line.substring(0, colonIndex).trim();
+      const headerValue = line.substring(colonIndex + 1).trim();
+      headers.push({
+        name: headerName,
+        value: headerValue,
+        raw: line,
+      });
+    } else {
+      // Continuation of previous header (multiline header)
+      if (headers.length > 0) {
+        headers[headers.length - 1].raw += ' ' + line.trim();
+        headers[headers.length - 1].value += ' ' + line.trim();
+      }
+    }
+  }
+
+  // Extract body
+  const body = bodyStart >= 0 ? lines.slice(bodyStart).join('\n') : '';
+
+  return { requestLine, statusLine, headers, body, isResponse };
+}
+
+/**
  * Extract host from URL
  */
 function extractHost(url: string): string {

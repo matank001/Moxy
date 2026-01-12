@@ -416,19 +416,26 @@ export const ResenderTab = () => {
 
             {/* Response Viewer */}
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
-              <div className="px-4 py-2 border-b bg-muted/30">
-                <h3 className="text-sm font-semibold">Response</h3>
-              </div>
               {activeTab.isLoading ? (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <p className="text-sm">Sending request...</p>
-                </div>
+                <>
+                  <div className="px-4 py-2 border-b bg-muted/30">
+                    <h3 className="text-sm font-semibold">Response</h3>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                    <p className="text-sm">Sending request...</p>
+                  </div>
+                </>
               ) : activeTab.response ? (
-                <HttpViewer content={activeTab.response.raw} />
+                <HttpViewer content={activeTab.response.raw} title="Response" />
               ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <p className="text-sm">Click Send to see response</p>
-                </div>
+                <>
+                  <div className="px-4 py-2 border-b bg-muted/30">
+                    <h3 className="text-sm font-semibold">Response</h3>
+                  </div>
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                    <p className="text-sm">Click Send to see response</p>
+                  </div>
+                </>
               )}
             </div>
           </div>

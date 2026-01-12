@@ -9,7 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Inbox, Globe, Shield, Filter, Trash2, Send, AlertCircle, X, Copy, Check } from "lucide-react";
+import { Inbox, Globe, Shield, Filter, Trash2, Send, AlertCircle, X, Copy, Check, Eye, Code } from "lucide-react";
 import { api, HttpRequest as BackendRequest, Project } from "@/lib/api";
 import { transformRequest, transformResponse, generateCurl } from "@/lib/requestTransform";
 import { toast } from "sonner";
@@ -47,6 +47,7 @@ export const HomeTab = () => {
   const [editingInterceptedFlow, setEditingInterceptedFlow] = useState<string | null>(null);
   const [editedRequests, setEditedRequests] = useState<Record<string, string>>({});
   const [requestCopied, setRequestCopied] = useState(false);
+  const [showRawRequest, setShowRawRequest] = useState(false);
   const [filters, setFilters] = useState<RequestFiltersState>({
     hideStaticAssets: false,
     excludedHosts: [],
@@ -639,6 +640,25 @@ export const HomeTab = () => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setShowRawRequest(!showRawRequest)}
+                            className="h-7 px-2 text-xs"
+                            title={showRawRequest ? "Show parsed view" : "Show raw view"}
+                          >
+                            {showRawRequest ? (
+                              <>
+                                <Eye className="w-3 h-3 mr-1" />
+                                Parsed
+                              </>
+                            ) : (
+                              <>
+                                <Code className="w-3 h-3 mr-1" />
+                                Raw
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleCopyRequest(selectedRequest, flowId)}
                             disabled={!selectedRequest.raw || selectedRequest.raw.length === 0}
                             className="h-7 px-2 text-xs"
@@ -691,6 +711,12 @@ export const HomeTab = () => {
                             className="flex-1 resize-none border-0 rounded-none font-mono text-sm bg-transparent focus-visible:ring-0 h-full min-h-0"
                             placeholder="Edit your request here..."
                           />
+                        ) : showRawRequest ? (
+                          <div className="flex-1 overflow-auto bg-card">
+                            <pre className="p-4 text-foreground/90 whitespace-pre-wrap break-words font-mono text-sm">
+                              {selectedRequest.raw || '(empty)'}
+                            </pre>
+                          </div>
                         ) : (
                           <HttpViewer 
                             content={selectedRequest.raw || ''} 
