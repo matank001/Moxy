@@ -9,7 +9,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Inbox, Globe, Shield, Filter, Trash2, Send, AlertCircle, X, Copy, Check, Eye, Code } from "lucide-react";
+import { Inbox, Globe, Shield, Filter, Trash2, Send, AlertCircle, X, Copy, Check, Eye, Code, Edit2 } from "lucide-react";
 import { api, HttpRequest as BackendRequest, Project } from "@/lib/api";
 import { transformRequest, transformResponse, generateCurl } from "@/lib/requestTransform";
 import { toast } from "sonner";
@@ -21,6 +21,8 @@ interface RequestFiltersState {
   includedHosts: string[];
   methods: string[]; // HTTP methods to include (empty = all methods)
   statusCodes: string[]; // Status code ranges to include (e.g., '2xx', '3xx', '4xx', '5xx') or empty for all
+  textSearch: string;
+  textSearchScope: 'both' | 'request' | 'response';
 }
 
 // Static asset file extensions to filter
@@ -54,6 +56,8 @@ export const HomeTab = () => {
     includedHosts: [],
     methods: [],
     statusCodes: [],
+    textSearch: '',
+    textSearchScope: 'both',
   });
   const isInitialLoad = React.useRef(true);
   const userHasSelected = React.useRef(false);
@@ -215,8 +219,24 @@ export const HomeTab = () => {
       });
     }
 
+    // Text search filter
+    if (filters.textSearch.trim()) {
+      const searchText = filters.textSearch.toLowerCase();
+      filtered = filtered.filter((req) => {
+        const requestMatches = filters.textSearchScope === 'both' || filters.textSearchScope === 'request'
+          ? (req.raw || '').toLowerCase().includes(searchText)
+          : false;
+        
+        const responseMatches = filters.textSearchScope === 'both' || filters.textSearchScope === 'response'
+          ? (responses[req.id]?.raw || '').toLowerCase().includes(searchText)
+          : false;
+        
+        return requestMatches || responseMatches;
+      });
+    }
+
     return filtered;
-  }, [requests, filters]);
+  }, [requests, filters, responses]);
 
   // Load current project and requests on mount
   useEffect(() => {
@@ -524,7 +544,7 @@ export const HomeTab = () => {
         >
           <Filter className="w-4 h-4" />
           Filters
-          {(filters.hideStaticAssets || filters.excludedHosts.length > 0 || filters.includedHosts.length > 0 || filters.methods.length > 0 || filters.statusCodes.length > 0) && (
+          {(filters.hideStaticAssets || filters.excludedHosts.length > 0 || filters.includedHosts.length > 0 || filters.methods.length > 0 || filters.statusCodes.length > 0 || filters.textSearch.trim().length > 0) && (
             <span className="ml-1 h-2 w-2 rounded-full bg-primary" />
           )}
         </Button>
@@ -678,6 +698,31 @@ export const HomeTab = () => {
                           {isIntercepted && flowId && (
                             <>
                               <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  if (editingInterceptedFlow === flowId) {
+                                    setEditingInterceptedFlow(null);
+                                  } else {
+                                    setEditingInterceptedFlow(flowId);
+                                  }
+                                }}
+                                className="h-7 px-2 text-xs"
+                                title={editingInterceptedFlow === flowId ? "Exit edit mode" : "Edit request"}
+                              >
+                                {editingInterceptedFlow === flowId ? (
+                                  <>
+                                    <Eye className="w-3 h-3 mr-1" />
+                                    View
+                                  </>
+                                ) : (
+                                  <>
+                                    <Edit2 className="w-3 h-3 mr-1" />
+                                    Edit
+                                  </>
+                                )}
+                              </Button>
+                              <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDropFlow(flowId)}
@@ -700,17 +745,33 @@ export const HomeTab = () => {
                       </div>
                       <div className="flex-1 overflow-auto">
                         {isIntercepted && flowId ? (
-                          <Textarea
-                            value={editedRequests[flowId] || selectedRequest.raw || ''}
-                            onChange={(e) => {
-                              setEditedRequests(prev => ({
-                                ...prev,
-                                [flowId]: e.target.value
-                              }));
-                            }}
-                            className="flex-1 resize-none border-0 rounded-none font-mono text-sm bg-transparent focus-visible:ring-0 h-full min-h-0"
-                            placeholder="Edit your request here..."
-                          />
+                          editingInterceptedFlow === flowId ? (
+                            // Edit mode: show textarea
+                            <Textarea
+                              value={editedRequests[flowId] || selectedRequest.raw || ''}
+                              onChange={(e) => {
+                                setEditedRequests(prev => ({
+                                  ...prev,
+                                  [flowId]: e.target.value
+                                }));
+                              }}
+                              className="flex-1 resize-none border-0 rounded-none font-mono text-sm bg-transparent focus-visible:ring-0 h-full min-h-0"
+                              placeholder="Edit your request here..."
+                            />
+                          ) : showRawRequest ? (
+                            // Raw view mode
+                            <div className="flex-1 overflow-auto bg-card">
+                              <pre className="p-4 text-foreground/90 whitespace-pre-wrap break-words font-mono text-sm">
+                                {editedRequests[flowId] || selectedRequest.raw || '(empty)'}
+                              </pre>
+                            </div>
+                          ) : (
+                            // Color-coded view mode (default)
+                            <HttpViewer 
+                              content={editedRequests[flowId] || selectedRequest.raw || ''} 
+                              title=""
+                            />
+                          )
                         ) : showRawRequest ? (
                           <div className="flex-1 overflow-auto bg-card">
                             <pre className="p-4 text-foreground/90 whitespace-pre-wrap break-words font-mono text-sm">

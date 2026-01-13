@@ -183,7 +183,7 @@ export const AgentTab = () => {
           if (pollTimeout) clearTimeout(pollTimeout);
           setIsLoading(false);
         }
-      }, 500); // Poll every 500ms
+      }, 100); // Poll every 500ms
       
       // Stop polling after 60 seconds max
       pollTimeout = setTimeout(() => {

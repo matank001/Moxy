@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { X } from "lucide-react";
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'];
@@ -28,6 +30,8 @@ interface RequestFilters {
   includedHosts: string[];
   methods: string[];
   statusCodes: string[];
+  textSearch: string;
+  textSearchScope: 'both' | 'request' | 'response';
 }
 
 interface RequestFiltersProps {
@@ -46,7 +50,7 @@ export const RequestFilters = ({
   const [excludedHostInput, setExcludedHostInput] = useState("");
   const [includedHostInput, setIncludedHostInput] = useState("");
 
-  const handleFilterChange = (key: keyof RequestFilters, value: boolean | string[]) => {
+  const handleFilterChange = (key: keyof RequestFilters, value: boolean | string | string[]) => {
     onFiltersChange({
       ...filters,
       [key]: value,
@@ -126,6 +130,49 @@ export const RequestFilters = ({
         </DialogHeader>
         
         <div className="space-y-6 py-4 overflow-y-auto flex-1 min-h-0">
+          {/* Text Search Filter */}
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="text-search" className="text-sm font-medium">
+                Text Search
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Search for text in requests and/or responses. Case-insensitive.
+              </p>
+            </div>
+            <Input
+              id="text-search"
+              placeholder="Enter search text..."
+              value={filters.textSearch}
+              onChange={(e) => handleFilterChange("textSearch", e.target.value)}
+              className="font-mono text-sm"
+            />
+            <RadioGroup
+              value={filters.textSearchScope}
+              onValueChange={(value) => handleFilterChange("textSearchScope", value as 'both' | 'request' | 'response')}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="both" id="scope-both" />
+                <Label htmlFor="scope-both" className="text-sm cursor-pointer">
+                  Both
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="request" id="scope-request" />
+                <Label htmlFor="scope-request" className="text-sm cursor-pointer">
+                  Request only
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="response" id="scope-response" />
+                <Label htmlFor="scope-response" className="text-sm cursor-pointer">
+                  Response only
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div className="flex items-center justify-between space-x-2">
             <div className="space-y-0.5">
               <Label htmlFor="hide-static-assets" className="text-sm font-medium">
