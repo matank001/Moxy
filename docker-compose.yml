@@ -1,0 +1,25 @@
+services:
+  moxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: moxy
+    ports:
+      - "5000:5000"  # Backend API and Frontend (served by Flask)
+      - "8081:8081"  # Proxy
+    volumes:
+      # Persist projects data
+      - ./projects_data:/app/projects_data
+    # Environment variables
+    # Docker Compose automatically loads .env from project root (no warning if missing)
+    # For backend/.env, set variables directly here or in .env file
+    environment:
+      - PORT=5000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

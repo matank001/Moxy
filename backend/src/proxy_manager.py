@@ -135,12 +135,14 @@ def start_proxy():
         
         # Start mitmdump process with verbose logging
         # Set stream_large_bodies=0 to disable streaming and capture full bodies (0 = never stream)
+        # block_global=false allows connections from non-localhost IPs (needed for Docker/remote access)
         _proxy_process = subprocess.Popen(
             [
                 'mitmdump',
                 '-s', str(addon_path),
                 '-p', str(_proxy_port),
                 '--set', 'termlog_verbosity=info',  # Debug level logging
+                '--set', 'block_global=false',  # Allow connections from non-localhost IPs
             ],
             stdout=stdout_file,
             cwd=Path(__file__).parent,

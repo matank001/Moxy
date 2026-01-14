@@ -61,13 +61,63 @@ To run this for now, you need to run the frontend and backend separately.
 By default, the frontend runs at [http://localhost:8080](http://localhost:8080)  
 and the backend runs at [http://localhost:5000](http://localhost:5000)
 
+## Docker Deployment
+
+Moxy can be run using Docker for easier deployment and consistent environments.
+In this way you can collaborate and install easily.
+
+### Quick Start with Docker
+
+1. **Build and start the container:**
+   ```sh
+   docker-compose up -d --build
+   ```
+
+2. **Access the application:**
+   - **Frontend**: http://localhost:5000
+   - **Proxy**: http://localhost:8081
+
+3. **Configure your browser to use the proxy:**
+   
+   When running in Docker, you need to manually configure your browser to use the proxy:
+   
+   - **Proxy Host**: `localhost` (or `127.0.0.1`)
+   - **Proxy Port**: `8081`
+   - **Protocol**: HTTP
+   
+   > **Note:**  
+   > The proxy runs inside the Docker container but is accessible on `localhost:8081` on your host machine.  
+   > You can configure proxy settings in your browser's network settings or use browser extensions for proxy management.
+
+4. **View logs:**
+   ```sh
+   docker-compose logs -f
+   ```
+
+5. **Stop the container:**
+   ```sh
+   docker-compose down
+   ```
+
+### Environment Variables
+
+Create a `.env` file in the project root to configure the application (you need to put it inside the `backend/` directory):
+
+> **Note:**  
+> The `.env` file is optional. Docker Compose automatically loads it if present (no warning if missing).  
+> All project data is persisted in the `projects_data` directory, which is mounted as a volume.
+
 ## Agentic Tool
 
 By default, Moxy works without requiring any AI configuration or credentials - even browser-based DAST flows don't use AI unless enabled.
 
 ### Enabling Agentic AI
 
-Moxy supports both **OpenAI's API** and **Ollama** (local AI) for agentic features. To enable AI-powered capabilities, create an `.env` file in the `backend` directory with the appropriate configuration.
+Moxy supports both **OpenAI's API** and **Ollama** (local AI) for agentic features. To enable AI-powered capabilities:
+
+**For local development:** Create an `.env` file in the `backend` directory with the appropriate configuration.
+
+**For Docker:** Create a `.env` file in the project root (same directory as `docker-compose.yml`).
 
 #### Option 1: Using OpenAI API
 

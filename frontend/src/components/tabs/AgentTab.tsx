@@ -39,12 +39,28 @@ export const AgentTab = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [expandedResults, setExpandedResults] = useState<Set<string>>(new Set());
+  const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [aiStatusMessage, setAiStatusMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load chats on mount
+  // Check AI availability on mount
   useEffect(() => {
-    loadChats();
+    const checkAiStatus = async () => {
+      try {
+        const status = await api.getAiStatus();
+        setAiConfigured(status.configured);
+        setAiStatusMessage(status.message);
+        if (status.configured) {
+          loadChats();
+        }
+      } catch (error) {
+        console.error("Error checking AI status:", error);
+        setAiConfigured(false);
+        setAiStatusMessage("No .env with AI key detected");
+      }
+    };
+    checkAiStatus();
   }, []);
 
   const loadChats = async () => {
@@ -262,6 +278,30 @@ export const AgentTab = () => {
     }
   };
 
+  // Show message if AI is not configured
+  if (aiConfigured === false) {
+    return (
+      <div className="flex h-full bg-background items-center justify-center">
+        <Card className="max-w-md p-6 border-destructive">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="relative">
+              <Bot className="w-16 h-16 opacity-30 text-destructive" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-destructive mb-2">AI Not Configured</h3>
+              <p className="text-sm text-muted-foreground">
+                {aiStatusMessage || "No .env with AI key detected"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                To enable AI features, create a <code className="bg-muted px-1 rounded">.env</code> file with your <code className="bg-muted px-1 rounded">OPENAI_API_KEY</code>
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full bg-background">
       {/* Sidebar with chat list */}
@@ -272,6 +312,7 @@ export const AgentTab = () => {
             className="w-full"
             variant="default"
             size="sm"
+            disabled={aiConfigured === false}
           >
             <Plus className="w-4 h-4 mr-2" />
             New Chat

@@ -27,6 +27,25 @@ def get_openai_client():
     client = OpenAI()
     return client
 
+def is_ai_configured():
+    """Check if AI is configured (OPENAI_API_KEY is set)"""
+    api_key = os.environ.get('OPENAI_API_KEY')
+    return api_key is not None and api_key.strip() != ''
+
+
+@agent_bp.route('/status', methods=['GET'])
+def get_ai_status():
+    """Check if AI is configured"""
+    try:
+        configured = is_ai_configured()
+        return jsonify({
+            'configured': configured,
+            'message': 'AI is configured' if configured else 'No .env with AI key detected'
+        }), 200
+    except Exception as e:
+        logger.error(f"Error checking AI status: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
 
 @agent_bp.route('/chats', methods=['GET'])
 def get_chats():
@@ -103,6 +122,10 @@ def delete_chat(chat_id):
 def chat_with_agent():
     """Chat with the agent using OpenAI Completions API - processes synchronously and updates DB"""
     try:
+        # Check if AI is configured
+        if not is_ai_configured():
+            return jsonify({'error': 'AI is not configured. Please set OPENAI_API_KEY in .env file'}), 400
+        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400
@@ -365,6 +388,9 @@ After executing queries, sending requests, or browsing, analyze results and prov
 def resender_agent():
     """AI copilot for resender - takes text from textbox, returns new text to replace it. Only has query_database tool."""
     try:
+        # Check if AI is configured
+        if not is_ai_configured():
+            return jsonify({'error': 'AI is not configured. Please set OPENAI_API_KEY in .env file'}), 400
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Request body is required'}), 400

@@ -8,16 +8,35 @@ import { AgentTab } from "./tabs/AgentTab";
 import { useResender } from "@/contexts/ResenderContext";
 import { StatusIndicators } from "./StatusIndicators";
 import { Home, Repeat, Globe, Folder, Bot } from "lucide-react";
+import { api } from "@/lib/api";
 
 export const AppTabs = () => {
   const { tabs, setNavigateCallback } = useResender();
   const [activeMainTab, setActiveMainTab] = useState("home");
+  const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [aiStatusMessage, setAiStatusMessage] = useState<string>("");
 
   useEffect(() => {
     setNavigateCallback(() => {
       setActiveMainTab("resender");
     });
   }, [setNavigateCallback]);
+
+  // Check AI availability on mount
+  useEffect(() => {
+    const checkAiStatus = async () => {
+      try {
+        const status = await api.getAiStatus();
+        setAiConfigured(status.configured);
+        setAiStatusMessage(status.message);
+      } catch (error) {
+        console.error("Error checking AI status:", error);
+        setAiConfigured(false);
+        setAiStatusMessage("No .env with AI key detected");
+      }
+    };
+    checkAiStatus();
+  }, []);
   
   return (
     <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="flex-1 flex flex-col min-h-0">
@@ -64,10 +83,21 @@ export const AppTabs = () => {
             </TabsTrigger>
             <TabsTrigger 
               value="agent" 
-              className="data-[state=active]:bg-muted data-[state=active]:shadow-none gap-2 px-4 hover:bg-success/10 transition-colors"
+              disabled={aiConfigured === false}
+              className={`data-[state=active]:bg-muted data-[state=active]:shadow-none gap-2 px-4 hover:bg-success/10 transition-colors ${
+                aiConfigured === false 
+                  ? 'opacity-50 cursor-not-allowed text-destructive' 
+                  : ''
+              }`}
+              title={aiConfigured === false ? aiStatusMessage : undefined}
             >
               <Bot className="h-4 w-4" />
               Agent
+              {aiConfigured === false && (
+                <span className="ml-1 text-xs text-destructive" title={aiStatusMessage}>
+                  ⚠
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
         </div>

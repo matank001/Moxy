@@ -1,0 +1,63 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.pytest_cache
+.coverage
+htmlcov
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Frontend build (will be built in Docker)
+frontend/dist
+frontend/.vite
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs
+
+# Database (will be mounted as volume)
+projects_data/*.db
+projects_data/*.log
+
+# Documentation
+*.md
+!README.md
+
+# Images
+images/
+
+# Lock files (will be copied)
+# uv.lock
+# package-lock.json

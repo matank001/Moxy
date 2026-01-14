@@ -1,5 +1,9 @@
 // API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// If VITE_API_URL is empty or not set, use relative URLs (for same-origin serving)
+const envApiUrl = import.meta.env.VITE_API_URL;
+const API_BASE_URL = envApiUrl && envApiUrl.trim() !== '' 
+  ? envApiUrl 
+  : (import.meta.env.DEV ? 'http://localhost:5000' : '');
 
 // Project type
 export interface Project {
@@ -328,6 +332,12 @@ class ApiClient {
   }
 
   // Agent endpoints
+  async getAiStatus(): Promise<{ configured: boolean; message: string }> {
+    return this.request<{ configured: boolean; message: string }>('/api/agent/status', {
+      method: 'GET',
+    });
+  }
+
   async getAgentChats(): Promise<any[]> {
     return this.request<any[]>('/api/agent/chats', {
       method: 'GET',

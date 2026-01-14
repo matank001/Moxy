@@ -47,11 +47,29 @@ export const ResenderTab = () => {
   const [isAiCopilotLoading, setIsAiCopilotLoading] = useState(false);
   const [isAiCopilotOpen, setIsAiCopilotOpen] = useState(false);
   const [aiCopilotPrompt, setAiCopilotPrompt] = useState("");
+  const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
+  const [aiStatusMessage, setAiStatusMessage] = useState<string>("");
 
   // Dynamic sizing based on tab count
   const tabCount = tabs.length;
   const isCompact = tabCount > 6;
   const isVeryCompact = tabCount > 12;
+
+  // Check AI availability on mount
+  useEffect(() => {
+    const checkAiStatus = async () => {
+      try {
+        const status = await api.getAiStatus();
+        setAiConfigured(status.configured);
+        setAiStatusMessage(status.message);
+      } catch (error) {
+        console.error("Error checking AI status:", error);
+        setAiConfigured(false);
+        setAiStatusMessage("No .env with AI key detected");
+      }
+    };
+    checkAiStatus();
+  }, []);
 
   useEffect(() => {
     if (editingTabId && editInputRef.current) {
@@ -71,6 +89,15 @@ export const ResenderTab = () => {
   const handleAiCopilot = async (id: string, prompt: string) => {
     const tab = tabs.find(t => t.id === id);
     if (!tab) return;
+
+    // Check if AI is configured
+    if (aiConfigured === false) {
+      toast.error("AI Copilot unavailable", { 
+        description: aiStatusMessage || "No .env with AI key detected. Please configure OPENAI_API_KEY to use AI features." 
+      });
+      setIsAiCopilotOpen(false);
+      return;
+    }
 
     if (!prompt.trim()) {
       toast.error("No prompt provided", { description: "Please enter a prompt for the AI copilot" });
@@ -352,56 +379,91 @@ export const ResenderTab = () => {
               <div className="px-4 py-2 border-b bg-muted/30 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Request</h3>
                 <Popover open={isAiCopilotOpen} onOpenChange={setIsAiCopilotOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={isAiCopilotLoading}
-                      className="h-6 px-2 gap-1 text-xs"
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      AI Copilot
-                    </Button>
-                  </PopoverTrigger>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={isAiCopilotLoading || aiConfigured === false}
+                            className={`h-6 px-2 gap-1 text-xs ${
+                              aiConfigured === false 
+                                ? 'opacity-50 cursor-not-allowed text-destructive' 
+                                : ''
+                            }`}
+                            title={aiConfigured === false ? (aiStatusMessage || "No .env with AI key detected") : undefined}
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            AI Copilot
+                            {aiConfigured === false && (
+                              <span className="ml-1 text-xs">⚠</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      {aiConfigured === false && (
+                        <TooltipContent>
+                          <p>{aiStatusMessage || "No .env with AI key detected"}</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <PopoverContent className="w-80 p-3" align="end">
                     <div className="space-y-2">
                       <div className="text-sm font-medium">AI Copilot</div>
-                      <Textarea
-                        value={aiCopilotPrompt}
-                        onChange={(e) => setAiCopilotPrompt(e.target.value)}
-                        placeholder="Describe what you want to do with the request. The AI can browse former requests from the database to help modify your request. Examples: 'Change method to POST', 'Add auth header like the login request', 'Update body based on similar requests'..."
-                        className="min-h-[80px] text-sm"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                            e.preventDefault();
-                            if (activeTab && aiCopilotPrompt.trim()) {
-                              handleAiCopilot(activeTab.id, aiCopilotPrompt);
-                            }
-                          }
-                        }}
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setIsAiCopilotOpen(false);
-                            setAiCopilotPrompt("");
-                          }}
-                          disabled={isAiCopilotLoading}
-                          className="h-7 text-xs"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => activeTab && handleAiCopilot(activeTab.id, aiCopilotPrompt)}
-                          disabled={isAiCopilotLoading || !aiCopilotPrompt.trim()}
-                          className="h-7 text-xs"
-                        >
-                          {isAiCopilotLoading ? "Processing..." : "Apply"}
-                        </Button>
-                      </div>
+                      {aiConfigured === false ? (
+                        <div className="p-4 border border-destructive/50 rounded-md bg-destructive/10">
+                          <p className="text-sm text-destructive font-medium mb-1">
+                            AI Not Configured
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {aiStatusMessage || "No .env with AI key detected"}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            To enable AI Copilot, create a <code className="bg-muted px-1 rounded">.env</code> file with your <code className="bg-muted px-1 rounded">OPENAI_API_KEY</code>
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <Textarea
+                            value={aiCopilotPrompt}
+                            onChange={(e) => setAiCopilotPrompt(e.target.value)}
+                            placeholder="Describe what you want to do with the request. The AI can browse former requests from the database to help modify your request. Examples: 'Change method to POST', 'Add auth header like the login request', 'Update body based on similar requests'..."
+                            className="min-h-[80px] text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                e.preventDefault();
+                                if (activeTab && aiCopilotPrompt.trim()) {
+                                  handleAiCopilot(activeTab.id, aiCopilotPrompt);
+                                }
+                              }
+                            }}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setIsAiCopilotOpen(false);
+                                setAiCopilotPrompt("");
+                              }}
+                              disabled={isAiCopilotLoading}
+                              className="h-7 text-xs"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => activeTab && handleAiCopilot(activeTab.id, aiCopilotPrompt)}
+                              disabled={isAiCopilotLoading || !aiCopilotPrompt.trim() || aiConfigured === false}
+                              className="h-7 text-xs"
+                            >
+                              {isAiCopilotLoading ? "Processing..." : "Apply"}
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </PopoverContent>
                 </Popover>
