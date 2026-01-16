@@ -71,10 +71,12 @@ def create_app():
     def health():
         """Health check endpoint"""
         proxy_status = 'running' if proxy_manager.is_proxy_running() else 'stopped'
+        is_docker = os.environ.get('DOCKER_ENV', 'false').lower() == 'true'
         return jsonify({
             'status': 'healthy',
             'proxy_status': proxy_status,
-            'proxy_port': proxy_manager.get_proxy_port()
+            'proxy_port': proxy_manager.get_proxy_port(),
+            'docker': is_docker
         }), 200
     
     return app
@@ -97,9 +99,22 @@ def main():
     # Start Flask app
     app = create_app()
     port = int(os.environ.get('PORT', 5000))
+    
+    # Automatically start the proxy
+    print("🚀 Starting proxy automatically...", file=sys.stderr)
+    if not proxy_manager.is_proxy_running():
+        success = proxy_manager.start_proxy()
+        if success:
+            print("✅ Proxy started successfully", file=sys.stderr)
+        else:
+            print("⚠️  Failed to start proxy automatically. You can start it manually via the API.", file=sys.stderr)
+    else:
+        print("✅ Proxy is already running", file=sys.stderr)
+    
     print(f"🌐 Starting Flask server on http://localhost:{port}")
     print(f"🔗 CORS enabled for frontend at http://localhost:5173")
     print(f"📡 Proxy API available at /api/proxy")
+    print(f"🌍 Proxy available at http://localhost:{proxy_manager.get_proxy_port()}")
     app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
 
 

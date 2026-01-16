@@ -54,6 +54,7 @@ EXPOSE 5000 8080 8081
 # Set environment variables
 ENV PORT=5000
 ENV PYTHONUNBUFFERED=1
+ENV DOCKER_ENV=true
 
 # Default command
 CMD ["python", "main.py"]

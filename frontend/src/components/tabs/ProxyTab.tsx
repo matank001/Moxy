@@ -13,10 +13,12 @@ export const ProxyTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isBrowserLoading, setIsBrowserLoading] = useState(false);
+  const [isDocker, setIsDocker] = useState(false);
 
   // Fetch proxy settings on mount and set up polling
   useEffect(() => {
     fetchProxySettings();
+    checkDockerEnvironment();
     
     // Poll every 2 seconds to keep status up to date
     const interval = setInterval(() => {
@@ -25,6 +27,15 @@ export const ProxyTab = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const checkDockerEnvironment = async () => {
+    try {
+      const health = await api.healthCheck();
+      setIsDocker(health.docker === true);
+    } catch (error) {
+      console.error("Failed to check Docker environment:", error);
+    }
+  };
 
   const fetchProxySettings = async (silent = false) => {
     if (!silent) {
@@ -313,22 +324,32 @@ echo "Certificate installation complete!"
             </div>
 
             {/* Browser Control */}
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Browser</p>
-                <p className="text-sm text-muted-foreground">
-                  Open a browser instance with proxy settings
+            {!isDocker && (
+              <div className="flex items-center justify-between p-4 rounded-lg border">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Browser</p>
+                  <p className="text-sm text-muted-foreground">
+                    Open a browser instance with proxy settings
+                  </p>
+                </div>
+                <Button
+                  onClick={handleOpenBrowser}
+                  disabled={isBrowserLoading}
+                  className="gap-2"
+                >
+                  <Globe className="w-4 h-4" />
+                  {isBrowserLoading ? "Opening..." : "Open Browser"}
+                </Button>
+              </div>
+            )}
+            {isDocker && (
+              <div className="p-4 rounded-lg border border-dashed bg-muted/50">
+                <p className="text-sm font-medium mb-1">Browser Control</p>
+                <p className="text-xs text-muted-foreground">
+                  Browser automation is not available in Docker. Please configure your browser manually to use the proxy at <code className="px-1 py-0.5 rounded bg-background font-mono text-xs">{proxyUrl}</code>
                 </p>
               </div>
-              <Button
-                onClick={handleOpenBrowser}
-                disabled={isBrowserLoading}
-                className="gap-2"
-              >
-                <Globe className="w-4 h-4" />
-                {isBrowserLoading ? "Opening..." : "Open Browser"}
-              </Button>
-            </div>
+            )}
 
             {/* HTTPS Certificate Notice */}
             <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">

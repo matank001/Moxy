@@ -212,8 +212,8 @@ class ApiClient {
     });
   }
 
-  async healthCheck(): Promise<{ status: string }> {
-    return this.request<{ status: string }>('/health');
+  async healthCheck(): Promise<{ status: string; docker?: boolean }> {
+    return this.request<{ status: string; docker?: boolean }>('/health');
   }
 
   // Proxy endpoints

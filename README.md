@@ -179,6 +179,48 @@ Moxy leverages [MITMproxy](https://mitmproxy.org/) as an intercepting HTTP/HTTPS
 By default, the proxy runs on **port 8081**.
 You can configure your browser or system to use `http://localhost:8081` as a proxy to route traffic through MITMproxy and allow Moxy to analyze and interact with requests in real time.
 
+### How to Configure Moxy in Firefox
+
+To analyze HTTP and HTTPS traffic from Firefox through Moxy, you need to configure Firefox to use Moxy's proxy and import the proxy certificate so that browser traffic (including HTTPS) can be properly intercepted.
+
+#### Step 1: Start Moxy and the Proxy
+
+Make sure Moxy (and its MITMproxy process) is running.
+
+#### Step 2: Configure Firefox to Use the Proxy
+
+1. Open Firefox.
+2. Go to `Settings` (or `Preferences` on some systems).
+3. Scroll down to the **Network Settings** section (at the bottom).
+4. Click **Settings…** next to "Network Settings."
+5. Choose **Manual proxy configuration**.
+6. Set **HTTP Proxy** to `localhost` and **Port** to `8081`.
+   - Check **Also use this proxy for HTTPS** or set **SSL Proxy** to `localhost:8081` as well.
+7. Click **OK** to save.
+
+> Now, all browser traffic will be routed through Moxy's proxy at `http://localhost:8081`.
+
+#### Step 3: Import the Proxy Certificate
+
+1. In Firefox (with the proxy still enabled), navigate to [http://mitm.it](http://mitm.it).
+2. The page will display download links for various certificates. Click the link for **Firefox** (or "Other" if that's not listed) to download the certificate (e.g., `mitmproxy-ca-cert.pem`).
+3. Go to `Settings` → `Privacy & Security` in Firefox.
+4. Scroll to the **Certificates** section and click **View Certificates…**
+5. In the Certificate Manager, go to the **Authorities** tab.
+6. Click **Import…** and select the certificate file you downloaded.
+7. When prompted, check both boxes:
+   - **Trust this CA to identify websites**
+   - (Optional) **Trust this CA to identify email users**
+8. Click **OK** to confirm.
+9. Restart Firefox if prompted or if HTTPS sites still fail to load without warnings.
+
+**After completing these steps, Firefox will trust HTTPS connections intercepted by Moxy's proxy.**  
+You are now ready to dynamically analyze and test web applications via HTTP and HTTPS without certificate warnings.
+
+*For more details, see [MITMproxy's certificate docs](https://docs.mitmproxy.org/stable/concepts-certificates/).*
+
+
+
 ## Database Structure
 
 - `moxy.db` - Main database storing project metadata

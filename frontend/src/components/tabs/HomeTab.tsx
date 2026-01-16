@@ -42,6 +42,7 @@ export const HomeTab = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
   const [isBrowserLoading, setIsBrowserLoading] = useState(false);
+  const [isDocker, setIsDocker] = useState(false);
   const [interceptEnabled, setInterceptEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
@@ -238,10 +239,20 @@ export const HomeTab = () => {
     return filtered;
   }, [requests, filters, responses]);
 
+  const checkDockerEnvironment = async () => {
+    try {
+      const health = await api.healthCheck();
+      setIsDocker(health.docker === true);
+    } catch (error) {
+      console.error("Failed to check Docker environment:", error);
+    }
+  };
+
   // Load current project and requests on mount
   useEffect(() => {
     loadCurrentProject();
     loadInterceptStatus();
+    checkDockerEnvironment();
   }, []);
 
   // Load intercept status
@@ -508,15 +519,17 @@ export const HomeTab = () => {
     <div className="h-full p-4 flex flex-col gap-4">
       {/* Top Controls Bar */}
       <div className="flex items-center gap-4 px-4 py-3 rounded-lg border bg-card">
-        <Button 
-          size="sm" 
-          className="gap-2"
-          onClick={handleOpenBrowser}
-          disabled={isBrowserLoading}
-        >
-          <Globe className="w-4 h-4" />
-          {isBrowserLoading ? "Opening..." : "Open Browser"}
-        </Button>
+        {!isDocker && (
+          <Button 
+            size="sm" 
+            className="gap-2"
+            onClick={handleOpenBrowser}
+            disabled={isBrowserLoading}
+          >
+            <Globe className="w-4 h-4" />
+            {isBrowserLoading ? "Opening..." : "Open Browser"}
+          </Button>
+        )}
 
         <div className="h-6 w-px bg-border mx-2" />
 
