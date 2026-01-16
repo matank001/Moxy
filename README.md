@@ -68,6 +68,23 @@ In this way you can collaborate and install easily.
 
 ### Quick Start with Docker
 
+#### Option 1: Using Pre-built Image (Recommended)
+
+`projects_data` holds all the databases and logs needed. It's the data folder.
+
+Pull and run the pre-built image from GitHub Container Registry:
+
+```sh
+docker run -d \
+  --name moxy \
+  -p 5000:5000 \
+  -p 8081:8081 \
+  -v $(pwd)/projects_data:/app/projects_data \
+  ghcr.io/matank001/moxy:latest
+```
+
+#### Option 2: Build from Source
+
 1. **Build and start the container:**
    ```sh
    docker-compose up -d --build
