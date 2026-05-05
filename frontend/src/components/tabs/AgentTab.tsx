@@ -14,6 +14,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import ReactMarkdown from "react-markdown";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface Message {
   role: "user" | "assistant" | "step";
@@ -28,6 +30,8 @@ interface Message {
 interface Chat {
   id: number;
   title: string;
+  provider?: string;
+  model?: string;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +47,10 @@ export const AgentTab = () => {
   const [aiStatusMessage, setAiStatusMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [provider, setProvider] = useState<string>("openai");
+  const [model, setModel] = useState<string>("gpt-4o-mini");
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
 
   // Check AI availability on mount
   useEffect(() => {
@@ -81,7 +89,9 @@ export const AgentTab = () => {
       setCurrentChatId(chatId);
       setIsLoading(true);
       const { chat, messages: chatMessages } = await api.getAgentChat(chatId);
-      
+      if (chat.provider) setProvider(chat.provider);
+      if (chat.model) setModel(chat.model);
+
       // Convert database messages to UI format
       const uiMessages: Message[] = chatMessages.map((msg: any) => ({
         role: msg.role,
@@ -137,6 +147,24 @@ export const AgentTab = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      setModelsLoading(true);
+      try {
+        const models = await api.getModels(provider);
+        setAvailableModels(models);
+        if (models.length > 0 && !models.includes(model)) {
+          setModel(models[0]);
+        }
+      } catch (e) {
+        setAvailableModels([]);
+      } finally {
+        setModelsLoading(false);
+      }
+    };
+    if (aiConfigured) fetchModels();
+  }, [provider, aiConfigured]);
 
   const toggleResultExpansion = (index: string) => {
     setExpandedResults((prev) => {
@@ -215,7 +243,7 @@ export const AgentTab = () => {
 
     try {
       // Send message and get chat_id (processing happens synchronously on backend)
-      const chatId = await api.chatWithAgent(messageText, currentChatId || undefined);
+      const chatId = await api.chatWithAgent(messageText, currentChatId || undefined, provider, model);
       
       // Update current chat ID if a new chat was created
       if (chatId && chatId !== currentChatId) {
@@ -356,6 +384,48 @@ export const AgentTab = () => {
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col">
+        {/* Provider/Model selector bar */}
+        <div className="border-b border-border px-4 py-2 flex items-center gap-4 bg-card">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground whitespace-nowrap">Provider</Label>
+            <Select value={provider} onValueChange={setProvider} disabled={isLoading}>
+              <SelectTrigger className="h-7 text-xs w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="anthropic">Anthropic</SelectItem>
+                <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="ollama">Ollama</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2 flex-1">
+            <Label className="text-xs text-muted-foreground whitespace-nowrap">Model</Label>
+            {availableModels.length > 0 ? (
+              <Select value={model} onValueChange={setModel} disabled={isLoading || modelsLoading}>
+                <SelectTrigger className="h-7 text-xs flex-1 max-w-64">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableModels.map((m) => (
+                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <input
+                className="h-7 text-xs border rounded px-2 flex-1 max-w-64 bg-background"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                disabled={isLoading || modelsLoading}
+                placeholder="model name"
+              />
+            )}
+          </div>
+          {provider === "ollama" && (
+            <span className="text-xs text-muted-foreground">(text-only mode)</span>
+          )}
+        </div>
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
