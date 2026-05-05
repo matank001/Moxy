@@ -404,10 +404,10 @@ class ApiClient {
     });
   }
 
-  async createAgentChat(title?: string): Promise<any> {
+  async createAgentChat(title?: string, provider?: string, model?: string): Promise<any> {
     return this.request<any>('/api/agent/chats', {
       method: 'POST',
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({ title, provider, model }),
     });
   }
 
@@ -425,15 +425,15 @@ class ApiClient {
 
   async chatWithAgent(
     message: string,
-    chatId?: number
+    chatId?: number,
+    provider?: string,
+    model?: string,
   ): Promise<number> {
     const url = `${this.baseUrl}/api/agent/chat`;
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message, chat_id: chatId }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, chat_id: chatId, provider, model }),
     });
 
     if (!response.ok) {
@@ -450,6 +450,23 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ text }),
     }).then(data => data.text);
+  }
+
+  async getModels(provider: string): Promise<string[]> {
+    const data = await this.request<{ models: string[] }>(`/api/agent/models?provider=${provider}`);
+    return data.models;
+  }
+
+  async getFindings(projectId: number, severity?: string, tool?: string): Promise<Finding[]> {
+    const params = new URLSearchParams();
+    if (severity) params.append('severity', severity);
+    if (tool) params.append('tool', tool);
+    const query = params.toString() ? `?${params}` : '';
+    return this.request<Finding[]>(`/api/projects/${projectId}/findings${query}`);
+  }
+
+  async deleteFinding(projectId: number, findingId: number): Promise<void> {
+    return this.request<void>(`/api/projects/${projectId}/findings/${findingId}`, { method: 'DELETE' });
   }
 }
 
@@ -471,6 +488,21 @@ export interface ResenderVersion {
   raw_request: string;
   raw_response: string | null;
   timestamp: string;
+}
+
+export interface Finding {
+  id: number;
+  request_id: number | null;
+  tool: string;
+  vuln_type: string | null;
+  severity: string;
+  title: string;
+  description: string | null;
+  evidence: string | null;
+  remediation: string | null;
+  timestamp: string;
+  url?: string;
+  method?: string;
 }
 
 // Intercept types - now just flow IDs
