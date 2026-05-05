@@ -10,7 +10,7 @@ import {
   ContextMenuLabel,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Terminal, Repeat, Copy, Trash2, Ban, CheckCircle2 } from "lucide-react";
+import { Terminal, Repeat, Copy, Trash2, Ban, CheckCircle2, Bot, Zap, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -26,6 +26,7 @@ interface RequestListProps {
   interceptedFlowIds?: string[];
   startNumber?: number; // Starting number for ordering (for pagination)
   onDelete?: (requestId: string) => void;
+  onSendToAgent?: (message: string) => void;
 }
 
 
@@ -37,7 +38,8 @@ export const RequestList = ({
   onIncludeHost,
   interceptedFlowIds = [],
   startNumber = 1,
-  onDelete
+  onDelete,
+  onSendToAgent,
 }: RequestListProps) => {
   const { addTab, navigateToResender } = useResender();
 
@@ -192,8 +194,35 @@ export const RequestList = ({
                 )}
                 
                 <ContextMenuSeparator className="bg-border/50" />
-                
-                <ContextMenuItem 
+
+                {onSendToAgent && (
+                  <>
+                    <ContextMenuItem
+                      onClick={() => onSendToAgent(`Analyze request #${request.id}: ${request.method} ${request.host}${request.path}`)}
+                      className="gap-3 cursor-pointer focus:bg-primary/10 focus:text-foreground"
+                    >
+                      <Bot className="w-4 h-4 text-primary" />
+                      <span>Analyze with AI</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => onSendToAgent(`Generate a PoC for request #${request.id} — try XSS, SQLi, SSRF as relevant`)}
+                      className="gap-3 cursor-pointer focus:bg-primary/10 focus:text-foreground"
+                    >
+                      <Shield className="w-4 h-4 text-primary" />
+                      <span>Generate PoC</span>
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => onSendToAgent(`Run an active scan on request #${request.id} — test common injection parameters`)}
+                      className="gap-3 cursor-pointer focus:bg-primary/10 focus:text-foreground"
+                    >
+                      <Zap className="w-4 h-4 text-primary" />
+                      <span>Active Scan</span>
+                    </ContextMenuItem>
+                    <ContextMenuSeparator className="bg-border/50" />
+                  </>
+                )}
+
+                <ContextMenuItem
                   onClick={() => {
                     if (onDelete) {
                       onDelete(request.id);

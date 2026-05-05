@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Bot, Loader2, Database, CheckCircle2, ChevronDown, Eye, Plus, Trash2 } from "lucide-react";
@@ -36,7 +36,11 @@ interface Chat {
   updated_at: string;
 }
 
-export const AgentTab = () => {
+interface AgentTabProps {
+  pendingMessage?: React.MutableRefObject<string | null>;
+}
+
+export const AgentTab = ({ pendingMessage }: AgentTabProps) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -165,6 +169,14 @@ export const AgentTab = () => {
     };
     if (aiConfigured) fetchModels();
   }, [provider, aiConfigured]);
+
+  useEffect(() => {
+    if (pendingMessage?.current && aiConfigured) {
+      const msg = pendingMessage.current;
+      pendingMessage.current = null;
+      setInput(msg);
+    }
+  }, [aiConfigured, pendingMessage]);
 
   const toggleResultExpansion = (index: string) => {
     setExpandedResults((prev) => {

@@ -46,7 +46,11 @@ const STATIC_ASSET_EXTENSIONS = [
   '.map', '.json',
 ];
 
-export const HomeTab = () => {
+interface HomeTabProps {
+  onSendToAgent?: (message: string) => void;
+}
+
+export const HomeTab = ({ onSendToAgent }: HomeTabProps) => {
   const [requests, setRequests] = useState<HttpRequest[]>([]);
   const [responses, setResponses] = useState<Record<string, HttpResponse>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -784,6 +788,7 @@ export const HomeTab = () => {
                   setSelectedId(id);
                 }}
                 onDelete={handleDeleteRequest}
+                onSendToAgent={onSendToAgent}
                 onExcludeHost={(host) => {
                   const hostLower = host.toLowerCase();
                   if (!filters.excludedHosts.includes(hostLower)) {
