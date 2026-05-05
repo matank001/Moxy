@@ -297,12 +297,12 @@ def init_project_db(project_name):
         # Migration: add columns if they don't exist (for existing databases)
         try:
             cursor.execute("ALTER TABLE agent_chats ADD COLUMN provider TEXT DEFAULT 'openai'")
-        except Exception:
-            pass
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         try:
             cursor.execute("ALTER TABLE agent_chats ADD COLUMN model TEXT DEFAULT 'gpt-4o-mini'")
-        except Exception:
-            pass
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         
         # Create agent_messages table for storing chat messages
         cursor.execute('''
@@ -1085,7 +1085,9 @@ def get_findings(project_id, severity=None, tool=None):
     with get_db(db_path) as conn:
         cursor = conn.cursor()
         query = '''
-            SELECT f.*, r.url, r.method
+            SELECT f.id, f.request_id, f.tool, f.vuln_type, f.severity,
+                   f.title, f.description, f.evidence, f.remediation, f.timestamp,
+                   r.url, r.method
             FROM findings f
             LEFT JOIN requests r ON f.request_id = r.id
             WHERE 1=1
