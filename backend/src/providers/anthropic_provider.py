@@ -33,15 +33,15 @@ class AnthropicProvider(BaseProvider):
 
         response = self.client.messages.create(**kwargs)
 
-        text = ""
+        text_parts = []
         tool_calls = []
         for block in response.content:
             if block.type == "text":
-                text = block.text
+                text_parts.append(block.text)
             elif block.type == "tool_use":
                 tool_calls.append({"id": block.id, "name": block.name, "input": block.input})
 
-        return text, tool_calls
+        return "".join(text_parts), tool_calls
 
     def _convert_messages(self, messages: list[dict]) -> list[dict]:
         """Convert OpenAI-format messages to Anthropic format."""

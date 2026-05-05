@@ -1,7 +1,10 @@
 import json
+import logging
 import os
 from openai import OpenAI
 from .base import BaseProvider
+
+logger = logging.getLogger(__name__)
 
 
 class OpenAIProvider(BaseProvider):
@@ -37,7 +40,8 @@ class OpenAIProvider(BaseProvider):
         try:
             models = self.client.models.list()
             return sorted([m.id for m in models.data if "gpt" in m.id])
-        except Exception:
+        except Exception as exc:
+            logger.warning("Could not fetch OpenAI models: %s", exc)
             return ["gpt-4o", "gpt-4o-mini"]
 
     def supports_tool_use(self) -> bool:

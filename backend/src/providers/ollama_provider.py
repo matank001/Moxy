@@ -1,5 +1,6 @@
 import os
 import logging
+import requests as http_req
 from openai import OpenAI
 from .base import BaseProvider
 
@@ -14,7 +15,7 @@ class OllamaProvider(BaseProvider):
 
     def chat(self, system: str, messages: list[dict], tools: list[dict], model: str) -> tuple[str, list[dict]]:
         openai_messages = [{"role": "system", "content": system}] + [
-            {k: v for k, v in m.items() if k in ("role", "content")}
+            {"role": m["role"], "content": m.get("content") or ""}
             for m in messages
             if m["role"] in ("user", "assistant")
         ]
@@ -27,7 +28,6 @@ class OllamaProvider(BaseProvider):
 
     def list_models(self) -> list[str]:
         try:
-            import requests as http_req
             ollama_base = self._base_url.rstrip("/").removesuffix("/v1")
             resp = http_req.get(f"{ollama_base}/api/tags", timeout=5)
             if resp.ok:
