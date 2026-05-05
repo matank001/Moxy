@@ -1,18 +1,19 @@
 [project]
-name = "moxy"
+name = "oblivionsec"
 version = "1.0.2"
-description = "Add your description here"
+description = "OblivionSec - Next-Gen DAST Tool"
 requires-python = ">=3.11"
 dependencies = [
     "flask>=3.0.0",
     "flask-cors>=4.0.0",
     "mitmproxy",
     "browser-use",
-    "openai-agents"
+    "openai-agents",
+    "anthropic>=0.40.0"
 ]
 
 [project.scripts]
-moxy = "main:main"
+oblivionsec = "main:main"
 
 [tool.uv]
 package = true

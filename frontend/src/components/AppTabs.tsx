@@ -44,7 +44,7 @@ export const AppTabs = () => {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="font-logo text-2xl font-bold text-primary tracking-tight">
-              moxy
+              OblivionSec
             </span>
           </div>
           <TabsList className="h-12 gap-1 bg-transparent p-0">

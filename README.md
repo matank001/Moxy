@@ -1,11 +1,11 @@
-# Moxy
+# OblivionSec
 
 <div align="center">
-  <img src="frontend/public/logo.png" alt="Moxy Logo">
+  <img src="frontend/public/logo.png" alt="OblivionSec Logo">
 </div>
 
-Moxy (Next-Gen Man in the middle proxy)
-Open-source DAST tool for pentesting powered by agentic AI capabilities (Supporting Ollama). Built on top of browser-use, Moxy streamlines dynamic application security testing.
+OblivionSec (Next-Gen Man in the Middle Proxy)
+Open-source DAST tool for pentesting powered by agentic AI capabilities (Supporting Ollama). Built on top of browser-use, OblivionSec streamlines dynamic application security testing.
 
 🚀  **INSANELY EASY TO USE**
 
@@ -16,7 +16,7 @@ And it's free, who doesn't like free stuff?
 </div>
 
 > **Preview Alert:**  
-> 🚧 Moxy is in active development and currently in **preview/beta**.  
+> 🚧 OblivionSec is in active development and currently in **preview/beta**.  
 > Expect breaking changes, instability, and missing features.  
 > Use at your own risk and follow project updates for latest improvements!
 
@@ -27,7 +27,7 @@ To run this for now, you need to run the frontend and backend separately.
 
 ### Prerequisites
 
-Before running Moxy, you need to install **`uv`** (astral-uv), a fast Python package installer and resolver.
+Before running OblivionSec, you need to install **`uv`** (astral-uv), a fast Python package installer and resolver.
 
 **Install `uv`:**
 - Follow the [official installation guide](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer) to install `uv` on your system.
@@ -45,7 +45,7 @@ Before running Moxy, you need to install **`uv`** (astral-uv), a fast Python pac
 2. **Install dependencies and run the backend server:**
    ```sh
    uv sync
-   uv run moxy
+   uv run oblivionsec
    ```
 
 ---
@@ -64,7 +64,7 @@ Before running Moxy, you need to install **`uv`** (astral-uv), a fast Python pac
 
 3. **Start the frontend development server:**
    ```sh
-   npm run moxy
+   npm run oblivionsec
    ```
 
 > **Note:**  
@@ -73,7 +73,7 @@ and the backend runs at [http://localhost:5000](http://localhost:5000)
 
 ## Docker Deployment
 
-Moxy can be run using Docker for easier deployment and consistent environments.
+OblivionSec can be run using Docker for easier deployment and consistent environments.
 In this way you can collaborate and install easily.
 
 ### Quick Start with Docker
@@ -86,11 +86,11 @@ Pull and run the pre-built image from GitHub Container Registry:
 
 ```sh
 docker run -d \
-  --name moxy \
+  --name oblivionsec \
   -p 5000:5000 \
   -p 8081:8081 \
   -v $(pwd)/projects_data:/app/projects_data \
-  ghcr.io/matank001/moxy:latest
+  ghcr.io/matank001/oblivionsec:latest
 ```
 
 #### Option 2: Build from Source
@@ -136,11 +136,11 @@ Create a `.env` file in the project root to configure the application (you need 
 
 ## Agentic Tool
 
-By default, Moxy works without requiring any AI configuration or credentials - even browser-based DAST flows don't use AI unless enabled.
+By default, OblivionSec works without requiring any AI configuration or credentials - even browser-based DAST flows don't use AI unless enabled.
 
 ### Enabling Agentic AI
 
-Moxy supports both **OpenAI's API** and **Ollama** (local AI) for agentic features. To enable AI-powered capabilities:
+OblivionSec supports both **OpenAI's API** and **Ollama** (local AI) for agentic features. To enable AI-powered capabilities:
 
 **For local development:** Create an `.env` file in the `backend` directory with the appropriate configuration.
 
@@ -184,18 +184,18 @@ The agent uses AI to reason about your application's attack surface, replay or m
 
 ## Proxy
 
-Moxy leverages [MITMproxy](https://mitmproxy.org/) as an intercepting HTTP/HTTPS proxy to capture and modify traffic during dynamic application security testing.
+OblivionSec leverages [MITMproxy](https://mitmproxy.org/) as an intercepting HTTP/HTTPS proxy to capture and modify traffic during dynamic application security testing.
 
 By default, the proxy runs on **port 8081**.
-You can configure your browser or system to use `http://localhost:8081` as a proxy to route traffic through MITMproxy and allow Moxy to analyze and interact with requests in real time.
+You can configure your browser or system to use `http://localhost:8081` as a proxy to route traffic through MITMproxy and allow OblivionSec to analyze and interact with requests in real time.
 
-### How to Configure Moxy in Firefox
+### How to Configure OblivionSec in Firefox
 
-To analyze HTTP and HTTPS traffic from Firefox through Moxy, you need to configure Firefox to use Moxy's proxy and import the proxy certificate so that browser traffic (including HTTPS) can be properly intercepted.
+To analyze HTTP and HTTPS traffic from Firefox through OblivionSec, you need to configure Firefox to use OblivionSec's proxy and import the proxy certificate so that browser traffic (including HTTPS) can be properly intercepted.
 
-#### Step 1: Start Moxy and the Proxy
+#### Step 1: Start OblivionSec and the Proxy
 
-Make sure Moxy (and its MITMproxy process) is running.
+Make sure OblivionSec (and its MITMproxy process) is running.
 
 #### Step 2: Configure Firefox to Use the Proxy
 
@@ -208,7 +208,7 @@ Make sure Moxy (and its MITMproxy process) is running.
    - Check **Also use this proxy for HTTPS** or set **SSL Proxy** to `localhost:8081` as well.
 7. Click **OK** to save.
 
-> Now, all browser traffic will be routed through Moxy's proxy at `http://localhost:8081`.
+> Now, all browser traffic will be routed through OblivionSec's proxy at `http://localhost:8081`.
 
 #### Step 3: Import the Proxy Certificate
 
@@ -224,7 +224,7 @@ Make sure Moxy (and its MITMproxy process) is running.
 8. Click **OK** to confirm.
 9. Restart Firefox if prompted or if HTTPS sites still fail to load without warnings.
 
-**After completing these steps, Firefox will trust HTTPS connections intercepted by Moxy's proxy.**  
+**After completing these steps, Firefox will trust HTTPS connections intercepted by OblivionSec's proxy.**  
 You are now ready to dynamically analyze and test web applications via HTTP and HTTPS without certificate warnings.
 
 *For more details, see [MITMproxy's certificate docs](https://docs.mitmproxy.org/stable/concepts-certificates/).*
@@ -233,7 +233,7 @@ You are now ready to dynamically analyze and test web applications via HTTP and 
 
 ## Database Structure
 
-- `moxy.db` - Main database storing project metadata
+- `oblivionsec.db` - Main database storing project metadata
 - `projects_data/{project_name}.db` - Individual project databases (named after project, sanitized)
   - Each project gets its own SQLite database file
   - When a project is renamed, its database file is automatically renamed
@@ -245,4 +245,4 @@ You are now ready to dynamically analyze and test web applications via HTTP and 
 
 ## Ethical Use Disclaimer
 
-Moxy is designed **strictly for ethical security testing and research purposes**. It is intended to assist security professionals, developers, and organizations in **identifying and remediating vulnerabilities in applications that they own or have explicit permission to test**.
+OblivionSec is designed **strictly for ethical security testing and research purposes**. It is intended to assist security professionals, developers, and organizations in **identifying and remediating vulnerabilities in applications that they own or have explicit permission to test**.

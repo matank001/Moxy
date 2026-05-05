@@ -13,7 +13,17 @@ PROJECTS_DB_DIR = 'projects_data'
 os.makedirs(PROJECTS_DB_DIR, exist_ok=True)
 
 # Main database is now also in projects_data
-MAIN_DATABASE_PATH = os.path.join(PROJECTS_DB_DIR, 'moxy.db')
+MAIN_DATABASE_PATH = os.path.join(PROJECTS_DB_DIR, 'oblivionsec.db')
+
+
+def _migrate_moxy_db():
+    """Rename moxy.db to oblivionsec.db on first run if it exists."""
+    old_path = os.path.join(PROJECTS_DB_DIR, 'moxy.db')
+    if os.path.exists(old_path) and not os.path.exists(MAIN_DATABASE_PATH):
+        os.rename(old_path, MAIN_DATABASE_PATH)
+        print("📦 Migrated moxy.db → oblivionsec.db")
+
+_migrate_moxy_db()
 
 
 def sanitize_filename(name):
@@ -49,13 +59,13 @@ def get_db(db_path=None):
 
 
 def list_available_databases():
-    """List all .db files in projects_data directory (excluding moxy.db)"""
+    """List all .db files in projects_data directory (excluding oblivionsec.db)"""
     if not os.path.exists(PROJECTS_DB_DIR):
         return []
-    
+
     db_files = []
     for filename in os.listdir(PROJECTS_DB_DIR):
-        if filename.endswith('.db') and filename != 'moxy.db':
+        if filename.endswith('.db') and filename != 'oblivionsec.db':
             filepath = os.path.join(PROJECTS_DB_DIR, filename)
             if os.path.isfile(filepath):
                 # Extract project name from filename (remove .db extension)
