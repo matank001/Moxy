@@ -59,7 +59,7 @@ const defaultRequest: HttpRequest = {
   path: '/',
   raw: `GET / HTTP/1.1
 Host: example.com
-User-Agent: Moxy/1.0
+User-Agent: OblivionSec/1.0
 Accept: */*`,
   timestamp: new Date(),
 };

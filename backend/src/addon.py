@@ -24,7 +24,7 @@ import db
 # since mitmproxy runs with cwd=src/, but the database is in backend/
 backend_dir = addon_dir.parent
 db.PROJECTS_DB_DIR = str(backend_dir / 'projects_data')
-db.MAIN_DATABASE_PATH = str(backend_dir / 'projects_data' / 'moxy.db')
+db.MAIN_DATABASE_PATH = str(backend_dir / 'projects_data' / 'oblivionsec.db')
 
 logger = logging.getLogger(__name__)
 

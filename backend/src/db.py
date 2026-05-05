@@ -20,8 +20,11 @@ def _migrate_moxy_db():
     """Rename moxy.db to oblivionsec.db on first run if it exists."""
     old_path = os.path.join(PROJECTS_DB_DIR, 'moxy.db')
     if os.path.exists(old_path) and not os.path.exists(MAIN_DATABASE_PATH):
-        os.rename(old_path, MAIN_DATABASE_PATH)
-        print("📦 Migrated moxy.db → oblivionsec.db")
+        try:
+            os.rename(old_path, MAIN_DATABASE_PATH)
+            print("📦 Migrated moxy.db → oblivionsec.db")
+        except OSError as e:
+            print(f"⚠️  Warning: could not migrate moxy.db: {e}")
 
 _migrate_moxy_db()
 
