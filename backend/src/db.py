@@ -288,10 +288,21 @@ def init_project_db(project_name):
             CREATE TABLE IF NOT EXISTS agent_chats (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT,
+                provider TEXT DEFAULT 'openai',
+                model TEXT DEFAULT 'gpt-4o-mini',
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
         ''')
+        # Migration: add columns if they don't exist (for existing databases)
+        try:
+            cursor.execute("ALTER TABLE agent_chats ADD COLUMN provider TEXT DEFAULT 'openai'")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE agent_chats ADD COLUMN model TEXT DEFAULT 'gpt-4o-mini'")
+        except Exception:
+            pass
         
         # Create agent_messages table for storing chat messages
         cursor.execute('''
@@ -306,6 +317,23 @@ def init_project_db(project_name):
                 tool_output TEXT,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (chat_id) REFERENCES agent_chats(id) ON DELETE CASCADE
+            )
+        ''')
+
+        # Create findings table for security scan results
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS findings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                request_id INTEGER,
+                tool TEXT NOT NULL,
+                vuln_type TEXT,
+                severity TEXT NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT,
+                evidence TEXT,
+                remediation TEXT,
+                timestamp TEXT NOT NULL,
+                FOREIGN KEY (request_id) REFERENCES requests(id)
             )
         ''')
 
@@ -765,21 +793,21 @@ def clear_intercepted_flows(project_name):
 
 # ===== Agent Chat Operations (Project Database) =====
 
-def create_agent_chat(project_id, title=None):
+def create_agent_chat(project_id, title=None, provider='openai', model='gpt-4o-mini'):
     """Create a new agent chat"""
     project = get_project_by_id(project_id)
     if not project:
         raise ValueError("Project not found")
-    
+
     db_path = get_project_db_path(project['name'])
     now = datetime.utcnow().isoformat()
-    
+
     with get_db(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO agent_chats (title, created_at, updated_at)
-            VALUES (?, ?, ?)
-        ''', (title or "New Chat", now, now))
+            INSERT INTO agent_chats (title, provider, model, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (title or "New Chat", provider, model, now, now))
         return cursor.lastrowid
 
 
@@ -1022,3 +1050,69 @@ def get_agent_messages(project_id, chat_id):
                     pass
             messages.append(msg)
         return messages
+
+
+# ===== Findings Operations (Project Database) =====
+
+def add_finding(project_id, request_id, tool, vuln_type, severity, title, description, evidence, remediation):
+    """Save a security finding to the project database"""
+    project = get_project_by_id(project_id)
+    if not project:
+        return None
+
+    db_path = get_project_db_path(project['name'])
+    now = datetime.utcnow().isoformat()
+
+    with get_db(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO findings (request_id, tool, vuln_type, severity, title, description, evidence, remediation, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (request_id, tool, vuln_type, severity, title, description, evidence, remediation, now))
+        return cursor.lastrowid
+
+
+def get_findings(project_id, severity=None, tool=None):
+    """Get security findings for a project with optional filters"""
+    project = get_project_by_id(project_id)
+    if not project:
+        return []
+
+    db_path = get_project_db_path(project['name'])
+    if not os.path.exists(db_path):
+        return []
+
+    with get_db(db_path) as conn:
+        cursor = conn.cursor()
+        query = '''
+            SELECT f.*, r.url, r.method
+            FROM findings f
+            LEFT JOIN requests r ON f.request_id = r.id
+            WHERE 1=1
+        '''
+        params = []
+        if severity:
+            query += ' AND f.severity = ?'
+            params.append(severity)
+        if tool:
+            query += ' AND f.tool = ?'
+            params.append(tool)
+        query += ' ORDER BY f.timestamp DESC'
+        cursor.execute(query, params)
+        return [dict(row) for row in cursor.fetchall()]
+
+
+def delete_finding(project_id, finding_id):
+    """Delete a finding"""
+    project = get_project_by_id(project_id)
+    if not project:
+        return False
+
+    db_path = get_project_db_path(project['name'])
+    if not os.path.exists(db_path):
+        return False
+
+    with get_db(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM findings WHERE id = ?', (finding_id,))
+        return cursor.rowcount > 0
