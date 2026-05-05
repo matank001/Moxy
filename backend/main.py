@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from src import db, state, proxy_manager, browser_manager
-from src.api import api_bp, register_requests_blueprint, register_resender_blueprint
+from src.api import api_bp, register_requests_blueprint, register_resender_blueprint, register_findings_blueprint
 import os
 import atexit
 import signal
@@ -45,6 +45,7 @@ def create_app():
     app.register_blueprint(api_bp)
     register_requests_blueprint(app)
     register_resender_blueprint(app)
+    register_findings_blueprint(app)
     
     # Serve frontend static files (for Docker/production)
     # This should be registered last so API routes take precedence
